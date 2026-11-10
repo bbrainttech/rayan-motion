@@ -5,7 +5,7 @@
 <title>Social kit</title>
 <link rel="stylesheet" href="/engine/engine.css">
 <style>
-.post { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: 7cqmin; overflow: hidden; }
+.post { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left); overflow: hidden; }
 .top, .foot { display: flex; align-items: center; justify-content: space-between; position: relative; }
 .top img { height: 5cqmin !important; }
 .top .chip { height: 5cqmin; padding: 0 2.2cqmin; font-size: 2.3cqmin; gap: 1.2cqmin; }
@@ -17,9 +17,13 @@
 .body .lead { font-size: 3.9cqmin; margin-top: 3cqmin; max-width: 64cqw; }
 .foot { font-family: var(--font-mono); font-size: 2.5cqmin; letter-spacing: 0.04em; color: var(--muted-foreground); }
 @container (aspect-ratio > 2 / 1) {
-  .post { padding: 8cqmin 7cqmin; }
-  .body .h { font-size: 17cqmin; }
-  .body .lead { font-size: 5.6cqmin; max-width: 56cqw; }
+  .body { max-width: none; }
+  .body .h { font-size: 17cqmin; white-space: nowrap; }
+  .body .h br, .body .lead, .body .eyebrow { display: none; }
+  .foot { justify-content: flex-end; }
+}
+@container (aspect-ratio > 4 / 1) {
+  .top .chip, .foot { display: none; }
 }
 @container (aspect-ratio < 1 / 1) {
   .body { max-width: none; }
@@ -40,7 +44,7 @@ build([{ tone: 'primary', dur: 0, html: () => `
     <div class="top">${logo(40)}<span class="chip"><i class="live"></i>New</span></div>
     <div class="body">
       ${eyebrow('tasks')}
-      <div class="h">Plan less.<br><span class="grad">Ship more.</span></div>
+      <div class="h">Plan less. <br><span class="grad">Ship more.</span></div>
       <p class="lead">The task list that keeps up with your team.</p>
     </div>
     <div class="foot"><span>acme.com/tasks</span></div>

@@ -27,7 +27,7 @@ The stage is a size container, so one layout can serve every format:
 - Size type and spacing in `cqmin`, `cqw` and `cqh`, so they scale with the frame.
 - Rearrange with container queries: `@container (aspect-ratio < 1 / 1) { ... }` for tall frames, `(aspect-ratio > 2 / 1)` for banners.
 - In script, `STAGE` holds `w`, `h`, `format`, `tall` and `safe` (in pixels). Branch positions and camera moves on it.
-- The class `safe` places an element on the safe area.
+- The class `safe` places an element on the safe area. For padding, `--safe-top`, `--safe-right`, `--safe-bottom` and `--safe-left` hold the same insets.
 
 `comps/teaser` and `comps/social-kit` both work this way.
 

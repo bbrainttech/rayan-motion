@@ -19,7 +19,7 @@ Stills built with the same engine: social cards, Open Graph images, banners, ann
    ```
 
    Each item has a `name`, a `size` or a `preset`, and optionally `scale`, `format` (`png` or `jpg`) and `at`, a time for pieces that also move.
-3. Write one layout: type and spacing in `cqmin`, container queries for tall and wide frames ([formats.md](formats.md)).
+3. Write one layout: type and spacing in `cqmin`, container queries for tall and wide frames, and padding from the safe area, `padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left)`, so text stays clear of what each platform covers ([formats.md](formats.md)).
 4. `bun render.ts set <id>` writes `comps/<id>/out/<name>.png` for each size.
 5. Open every file. Then lint each size: `bun lint.ts <id> --size 1500x500`.
 
