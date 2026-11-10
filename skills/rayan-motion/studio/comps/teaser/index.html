@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launch teaser</title>
+<link rel="stylesheet" href="/engine/engine.css">
+<style>
+.pad { padding: 0 3cqmin; display: flex; flex-direction: column; justify-content: center; gap: 4.5cqmin; }
+.big { font-size: 16cqmin; }
+.sub { font-size: 7cqmin; }
+.stats { display: flex; gap: 3cqmin; align-items: stretch; }
+.stat { flex: 1; padding: 3.4cqmin; display: grid; gap: 1.5cqmin; align-content: start; }
+.stat .v { font-family: var(--font-display); font-size: 8.8cqmin; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.stat .k { font-size: 2.3cqmin; color: var(--muted-foreground); }
+.stat .viz { margin-top: 1.2cqmin; display: flex; align-items: center; }
+.plot { position: relative; align-self: center; }
+.note { position: absolute; height: 46px; padding: 0 20px; display: inline-flex; align-items: center; border-radius: 999px; background: var(--foreground); color: var(--background); font-size: 21px; font-weight: 500; white-space: nowrap; transform-origin: left bottom; }
+.cta { position: relative; width: min(1180px, 86cqw); padding: 8cqmin 5cqmin; display: grid; justify-items: center; gap: 3.6cqmin; text-align: center; }
+#party { position: absolute; inset: 0; }
+@container (aspect-ratio < 5 / 4) {
+  .big { font-size: 14cqmin; }
+  .stats { flex-direction: column; }
+  .stat { grid-template-columns: 1fr auto; align-items: center; }
+  .stat .viz { grid-column: 2; grid-row: 1 / span 3; margin: 0; }
+}
+@container (aspect-ratio > 9 / 10) and (aspect-ratio < 5 / 4) {
+  .sub { font-size: 6cqmin; }
+  .stat { padding: 2.2cqmin 3cqmin; }
+  .stat .k { display: none; }
+}
+</style>
+</head>
+<body>
+<div id="stage"><div id="scenes"></div></div>
+<script src="/engine/engine.js"></script>
+<script src="/engine/motion.js"></script>
+<script>
+const CUTS = [0.0, 3.871, 9.6774, 13.5484, 16.4516]
+const len = (i) => CUTS[i + 1] - CUTS[i]
+const narrow = STAGE.w / STAGE.h < 1.25
+const inner = STAGE.w - STAGE.safe.left - STAGE.safe.right - 0.06 * Math.min(STAGE.w, STAGE.h)
+const S = []
+
+S.push({ tone: 'primary', dur: len(0), html: () => `
+  <div class="layer glow"></div><div class="layer dots mask-radial"></div>
+  <div class="safe pad" style="gap: 0">
+    <div data-a="blur@0.05" style="margin-bottom: 3.6cqmin">${eyebrow('introducing')}</div>
+    <div class="h black big">${type('PLAN LESS.', 0.2, { by: 'chars', gap: 0.075 })}</div>
+    <div class="h big" data-a="blur@1.0/0.7">${mark('Ship more.', 1.5)}</div>
+  </div>` })
+
+const week = [22, 31, 28, 44, 52, 61, 78]
+S.push({ tone: 'emerald', enter: 'blur', dur: len(1), html: () => `
+  <div class="layer glow"></div>
+  <div class="safe pad">
+    <div class="h sub grad" data-a="blur@0.5/0.7">One list. Real numbers.</div>
+    <div class="stats">
+      <div class="stat card sq-2xl" data-a="blur@0.75">
+        <div class="micro">Tasks shipped</div>
+        <div class="v num" data-count="0>12480@0.85/1.5">0</div>
+        <div class="k">across 214 teams</div>
+        <div class="viz">${barChart({ vals: week, w: narrow ? 300 : 420, h: 110, t: 1.05, peak: 6, color: 'var(--tone)' })}</div>
+      </div>
+      <div class="stat card sq-2xl" data-a="blur@0.83">
+        <div class="micro">Faster cycles</div>
+        <div class="v num" data-count="0>38@1.0/1.3" data-fmt="pct">0</div>
+        <div class="k">first note to done</div>
+        <div class="viz">${ring({ value: 0.38, size: 130, stroke: 15, t: 1.0, dur: 1.3, color: 'var(--tone)' })}</div>
+      </div>
+      <div class="stat card sq-2xl" data-a="blur@0.91">
+        <div class="micro">Rated</div>
+        <div class="v num" data-count="0>4.9@1.15/1.2" data-fmt="dec">0</div>
+        <div class="k">by daily users</div>
+      </div>
+    </div>
+  </div>` })
+
+const growth = [18, 24, 22, 31, 40, 38, 52, 61, 58, 74, 88, 96]
+const plot = { w: Math.round(Math.min(1320, inner)), h: narrow ? 480 : 420 }
+const chart = lineChart({ vals: growth, w: plot.w, h: plot.h, max: 110, id: 'grow', width: 4, stroke: 'var(--tone)' })
+const peak = chart.pts[chart.pts.length - 1]
+S.push({ tone: 'indigo', enter: 'push-up', dur: len(2), html: () => `
+  <div class="layer glow"></div>
+  <div class="safe pad">
+    <div class="h sub grad" data-a="blur@0.55/0.7">Every week, a little faster.</div>
+    <div class="plot" style="width: ${plot.w}px; height: ${plot.h}px">
+      ${chart.svg.replace('data-wipe', 'data-a="wipe@0.8/1.5"')}
+      <i class="abs" style="left: ${peak[0] - 8}px; top: ${peak[1] - 8}px; width: 16px; height: 16px; border-radius: 50%; background: var(--tone); box-shadow: 0 0 0 7px color-mix(in oklab, var(--tone) 22%, transparent)" data-a="pop@2.15"></i>
+      <span class="note" style="left: ${peak[0] - 262}px; top: ${peak[1] - 82}px" data-a="blur@2.3/0.5">4.3× since launch</span>
+    </div>
+  </div>` })
+
+S.push({ tone: 'primary', enter: 'blur', dur: len(3), html: () => `
+  <canvas id="party" width="${STAGE.w}" height="${STAGE.h}"></canvas>
+  <div class="center">
+    <div class="cta card sq-3xl" data-a="blur@0.3/0.8">
+      <div class="layer dots mask-radial"></div><div class="layer glow low"></div>
+      <i class="plus" style="left: 34px; top: 34px"></i><i class="plus" style="right: 34px; top: 34px"></i>
+      <i class="plus" style="left: 34px; bottom: 34px"></i><i class="plus" style="right: 34px; bottom: 34px"></i>
+      <span class="chip" style="position: relative" data-a="blur@0.6"><i class="live"></i>Open to everyone</span>
+      <div class="h grad" style="position: relative; font-size: 11cqmin" data-a="blur@0.7/0.7">Start today.</div>
+      <div class="mono muted" style="position: relative; font-size: 2.6cqmin; letter-spacing: 0.06em" data-a="fade@1.1" data-scramble="1.1/0.9">ACME.COM/START</div>
+    </div>
+  </div>` })
+
+build(S, { poster: 2.2 })
+confetti(document.getElementById('party'), { at: S[3].start + 0.9, y: 0.6 })
+start()
+</script>
+</body>
+</html>

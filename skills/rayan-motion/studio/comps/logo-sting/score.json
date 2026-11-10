@@ -1,0 +1,51 @@
+{
+ "duration": 4.8,
+ "cuts": [
+  0.0
+ ],
+ "music": {
+  "style": "air",
+  "ending": "ring",
+  "bpm": 66.0,
+  "key": "E",
+  "minor": false,
+  "seed": 11,
+  "energy": [
+   [
+    0,
+    1
+   ]
+  ],
+  "gain_db": 0.0
+ },
+ "sfx": [
+  {
+   "fx": "air",
+   "at": 0.3,
+   "d": 0.9
+  },
+  {
+   "fx": "rise",
+   "at": 0.4,
+   "d": 1.2
+  },
+  {
+   "fx": "drop",
+   "at": 1.6
+  },
+  {
+   "fx": "ding",
+   "at": 1.65,
+   "deg": 1,
+   "octave": 6
+  },
+  {
+   "fx": "shimmer",
+   "at": 1.95
+  }
+ ],
+ "length": [
+  0,
+  3600
+ ]
+}

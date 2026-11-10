@@ -1,0 +1,14 @@
+{
+  "brand": "Acme",
+  "hotwords": "Acme",
+  "voice": "af_bella",
+  "lang": "en-us",
+  "speed": 1.0,
+  "music": {"style": "glass", "ending": "ring", "seed": 11},
+  "length": [20, 60],
+  "fps": 60,
+  "timezone": "UTC",
+  "locale": "en-US",
+  "fonts": ["500 16px Gabarito", "700 16px Gabarito"],
+  "strip": ["nextjs-portal", "next-route-announcer", "[data-nextjs-toast]", "[data-next-badge-root]", "vite-error-overlay"]
+}

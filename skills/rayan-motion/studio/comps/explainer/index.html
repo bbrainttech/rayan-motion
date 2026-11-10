@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Capture a task</title>
+<link rel="stylesheet" href="/engine/engine.css">
+<style>
+.hook { left: var(--safe-left); top: 300px; width: 1000px; }
+.hook .h { font-size: 136px; line-height: 0.96; letter-spacing: -0.04em; }
+.ghost { right: 104px; top: 470px; transform: perspective(1500px) rotateY(-26deg) rotateX(9deg) rotateZ(-3deg); transform-origin: 100% 50%; }
+.lift { left: 0; top: 0; transform-origin: 0 0; }
+.sweep { position: absolute; inset: 0; z-index: 2; background: linear-gradient(100deg, transparent 32%, oklch(1 0 0 / 0.55) 50%, transparent 68%); mix-blend-mode: soft-light; transform: translateX(-100%); }
+.ping { position: absolute; z-index: 2; border-radius: 99px; border: 3px solid var(--emerald); opacity: 0; }
+.say { left: 0; right: 0; top: 650px; z-index: 35; text-align: center; }
+.say .h { font-size: 80px; }
+.close { inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; }
+.close .h { font-size: 128px; line-height: 0.98; letter-spacing: -0.035em; }
+.close .chip.mono { height: 72px; padding: 0 32px; font-size: 26px; }
+.halo { position: absolute; left: 50%; top: 50%; width: 900px; height: 900px; margin: -450px 0 0 -450px; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in oklab, var(--tone) 34%, transparent), transparent); }
+.hand { position: absolute; left: 0; top: 0; z-index: 60; }
+.hand .cursor { position: static; opacity: 1; display: block; width: 30px; height: 36px; }
+.recap { left: 0; right: 0; bottom: 64px; display: flex; justify-content: center; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="scenes"></div>
+  <div id="persist"></div>
+</div>
+<script src="/engine/engine.js"></script>
+<script src="/engine/app.js"></script>
+<script src="/engine/helpers.js"></script>
+<script src="/engine/motion.js"></script>
+<script>
+const CUTS = [0.0, 4.6154, 13.8462, 18.4615, 23.0769]
+const ENDING = 'cta'
+const BPM = 104.0
+const BEAT = 60 / BPM
+const BOX = { x: 150, y: 140, w: 1620, h: 911 }
+const FULL = BOX.w / PAGE.w
+const TEXT = 'Write the launch post'
+const len = (i) => CUTS[i + 1] - CUTS[i]
+const bg = (extra = '') => `<div class="layer aurora bg"></div><div class="layer dots mask-radial bg" style="opacity: 0.45"></div><div class="layer grain bg"></div>${extra}`
+
+const closing = {
+  cta: () => `<div class="halo" data-a="fade@0.2/1.4"></div><div class="abs close">
+    <div data-a="blurd@0.2">${logo(54)}</div>
+    <div class="h" style="margin-top: 48px">${type('Plan less.', 0.45, { kind: 'slam', gap: 0.14 })}</div>
+    <div class="h grad" data-a="wipe@0.85/0.8">Ship more.</div>
+    <div style="display: flex; gap: 18px; margin-top: 60px" data-a="rise@1.25">
+      <span class="chip mono">acme.app</span>
+      <span class="btn" id="go">Get started ${arrow}</span>
+    </div>
+  </div>`,
+  logo: () => `<div class="halo" data-a="bloom@0.1/1.6"></div><div class="abs close">
+    <div data-a="popl@0.25/0.9">${logo(150)}</div>
+    <p class="lead" style="margin-top: 46px; font-size: 44px">${type('Work that moves.', 0.95, { gap: 0.09 })}</p>
+  </div>`,
+  result: () => `<div class="abs recap">${keycaps(['New task', 'Type a name', 'Add'], 1.2, { hold: 99 })}</div>`,
+  loop: () => '',
+}
+
+const S = []
+S.push({ tone: 'primary', dur: len(0), html: () => bg(`
+  <div class="abs hook" data-a="outb@${(len(0) - 0.32).toFixed(2)}">
+    <div class="h">${type('Capture a task', 0.3, { kind: 'slam', gap: 0.16 })}</div>
+    <div class="h grad" data-a="wipe@1.0/0.9">before it slips away.</div>
+  </div>`) })
+S.push({ tone: 'primary', dur: len(1), html: () => bg() })
+S.push({ tone: 'emerald', dur: len(2), html: () => bg() })
+S.push({ tone: ENDING === 'result' ? 'emerald' : 'primary', dur: len(3), html: () => bg(closing[ENDING]()) })
+
+build(S, CUTS[2] + 1.7)
+const [, T1, T2, T3] = S.map((s) => s.start)
+const END = DURATION
+const PRESS = T1 + 4.5 * BEAT
+const TYPE = PRESS + 0.75
+const ADD = T1 + 12 * BEAT
+const BUTTON = T3 + 4 * BEAT
+
+const persist = document.getElementById('persist')
+persist.innerHTML = screenWindow('a', BOX, ['01-tasks', '02-new-hover', '03-form', '04-add-hover', '05-added'])
+
+function stageOf(w, [cx, cy, s], px, py) {
+  let tx = w.box.w / 2 - cx * s
+  let ty = w.box.h / 2 - cy * s
+  tx = Math.min(0, Math.max(w.box.w - w.page.w * s, tx))
+  ty = Math.min(0, Math.max(w.box.h - w.page.h * s, ty))
+  return { x: BOX.x + tx + px * s, y: BOX.y + ty + py * s }
+}
+
+function offsetIn(el) {
+  let x = 0
+  let y = 0
+  for (let e = el; e && e.id !== 'stage'; e = e.offsetParent) {
+    x += e.offsetLeft
+    y += e.offsetTop
+  }
+  return { x, y, w: el.offsetWidth, h: el.offsetHeight }
+}
+
+screens(() => {
+  const a = win('a')
+  a.since = T1
+  const create = box(a, '01-tasks', '#new')
+  const field = box(a, '03-form', '#name')
+  const add = box(a, '04-add-hover', '#add')
+  const row = box(a, '05-added', '#list li')
+  const badge = box(a, '05-added', '#list li em')
+
+  const AT = [700, 330, 1.38]
+  const PAD = 6
+  const ghost = piece('ghost', '05-added', { x: row.x, y: row.y, w: 400, h: row.h }, { scale: 2.1, pad: 10 })
+  const lift = piece('lift', '05-added', row, { scale: AT[2], pad: PAD })
+  const ghostEl = document.createElement('div')
+  ghostEl.className = 'abs lifted ghost'
+  ghostEl.style.cssText += `width: ${ghost.w}px; height: ${ghost.h}px`
+  ghostEl.innerHTML = ghost.html
+  const liftEl = document.createElement('div')
+  liftEl.className = 'abs lifted lift'
+  liftEl.dataset.tone = 'emerald'
+  liftEl.style.cssText += `width: ${lift.w}px; height: ${lift.h}px`
+  const ping = badge.h * AT[2] + 26
+  liftEl.innerHTML = lift.html + `<i class="sweep"></i><i class="ping" style="left: ${((badge.cx - row.x + PAD) * AT[2] - ping / 2).toFixed(1)}px; top: ${((badge.cy - row.y + PAD) * AT[2] - ping / 2).toFixed(1)}px; width: ${ping}px; height: ${ping}px"></i>`
+  const say = document.createElement('div')
+  say.className = 'abs say'
+  say.innerHTML = `<div class="h">${type('On top of your list.', 0, { gap: 0.07 })}</div>`
+  persist.append(ghostEl, liftEl, say)
+  parseAnims(say, T2 + 0.85)
+  anim(say, KF.outb, T3, 0.3, 'in', 'forwards')
+  const pieces = screens(() => {
+    ghost.crop()
+    lift.crop()
+  })
+
+  anim(ghostEl, [{ translate: '0 0' }, { translate: '0 -18px' }], 0, T1, 'lin')
+  anim(ghostEl, [{ opacity: 1, scale: '1', filter: 'blur(0px)' }, { opacity: 0, scale: '1.6', filter: 'blur(16px)' }], T1 - 0.3, 0.55, 'in', 'forwards')
+
+  const from = { x: 700, y: 450 }
+  const TO_NEW = [T1 + 1.5, PRESS - 0.2]
+  const TO_ADD = [ADD - 1.0, ADD - 0.25]
+  const rest = { x: field.x + 180, y: field.cy + 38 }
+  const hoverNew = enters(TO_NEW, from, { x: create.cx, y: create.cy }, create)
+  const hoverAdd = enters(TO_ADD, rest, { x: add.cx, y: add.cy }, add)
+  const keys = keystrokes(TEXT, TYPE, 0.075)
+
+  show(a, [
+    [T1, '01-tasks'],
+    [hoverNew, '02-new-hover', 0.1],
+    [PRESS + 0.05, '03-form', 0.15],
+    [hoverAdd, '04-add-hover', 0.1],
+    [ADD + 0.05, '05-added', 0.15],
+  ])
+  typing(a, ['03-form'], '#name', TEXT, keys)
+  caret(a, [{ sel: '#name', from: PRESS + 0.2, to: hoverAdd, keysAt: keys }])
+
+  const cam = [
+    [T1, 640, 360, FULL],
+    [T1 + 1.5, 640, 360, FULL],
+    [PRESS - 0.25, 740, 250, 1.5, 'std'],
+    [ADD + 0.25, 740, 250, 1.5],
+    [ADD + 1.05, ...AT, 'std'],
+    [T3, ...AT],
+  ]
+  if (ENDING === 'result') cam.push([T3 + 0.25, ...AT], [T3 + 1.05, 640, 360, FULL, 'std'], [END, 640, 360, FULL])
+  camera(a, cam)
+
+  pointer(a, [
+    [TO_NEW[0], from.x, from.y],
+    [TO_NEW[1], create.cx, create.cy],
+    [PRESS + 0.4, create.cx, create.cy],
+    [PRESS + 1.0, rest.x, rest.y],
+    [TO_ADD[0], rest.x, rest.y],
+    [TO_ADD[1], add.cx, add.cy],
+    [ADD + 0.5, add.cx, add.cy],
+    [ADD + 1.2, row.x + 520, row.cy + 34],
+    [T2, row.x + 520, row.cy + 34],
+  ], { from: TO_NEW[0], to: T2 - 0.5 })
+  tap(a, PRESS, create.cx, create.cy)
+  tap(a, ADD, add.cx, add.cy)
+
+  anim(a.el, KF.tiltin, T1, 1.3, 'std')
+  const blur = [[T2, 0, 1], [T2 + 0.6, 7, 0.5], [T3, 7, 0.5]]
+  blur.push(ENDING === 'result' ? [T3 + 0.6, 0, 1] : [T3 + 0.3, 18, 0.3])
+  depth(a.el, blur)
+
+  const start = stageOf(a, AT, row.x - PAD, row.y - PAD)
+  const k = 1.12
+  const centre = { x: 960 - (lift.w * k) / 2, y: 430 - (lift.h * k) / 2 }
+  const at = (p, s) => `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px) scale(${s})`
+  anim(liftEl, [{ opacity: 0 }, { opacity: 1 }], T2, 0.12, 'lin')
+  anim(liftEl, [{ transform: at(start, 1) }, { transform: at(centre, k) }], T2 + 0.05, 0.95, 'over')
+  anim(liftEl.querySelector('.sweep'), [{ transform: 'translateX(-100%)' }, { transform: 'translateX(100%)' }], T2 + 1.0, 0.9, 'io')
+  anim(liftEl.querySelector('.ping'), [{ opacity: 0.9, transform: 'scale(0.7)' }, { opacity: 0, transform: 'scale(1.9)' }], T2 + 1.3, 0.8, 'std', 'none')
+  onFrame((t) => { liftEl.style.visibility = t >= T2 && t < T3 + 1 ? 'visible' : 'hidden' })
+
+  if (ENDING === 'result') {
+    anim(liftEl, [{ transform: at(centre, k) }, { transform: at(start, 1) }], T3, 0.7, 'std')
+    anim(liftEl, [{ opacity: 1 }, { opacity: 0 }], T3 + 0.7, 0.15, 'lin', 'forwards')
+    anim(a.el, [{ scale: '1', translate: '0 0' }, { scale: '0.84', translate: '0 -64px' }], T3 + 0.2, 0.9, 'std')
+    spotlight(a, row, T3 + 1.0, END + 1, { dim: 0.45 })
+    during(a, T1, END + 1)
+  } else {
+    anim(liftEl, KF.outb, T3, 0.3, 'in', 'forwards')
+    anim(a.el, KF.outf, T3, 0.3, 'in', 'forwards')
+    during(a, T1, T3 + 0.3)
+  }
+
+  if (ENDING === 'loop') {
+    anim(ghostEl, [{ opacity: 0, scale: '1.1', translate: '0 0', filter: 'blur(12px)' }, { opacity: 1, scale: '1', translate: '0 0', filter: 'blur(0px)' }], END - 1.5, 1.2, 'std', 'forwards')
+  }
+
+  if (ENDING === 'cta') {
+    const go = document.getElementById('go')
+    const r = offsetIn(go)
+    const hand = document.createElement('div')
+    hand.className = 'hand'
+    hand.innerHTML = CURSOR
+    persist.append(hand)
+    const tip = { x: r.x + r.w * 0.62, y: r.y + r.h * 0.55 }
+    const pos = (p) => `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px)`
+    anim(hand, [{ transform: pos({ x: 1500, y: 1000 }) }, { transform: pos(tip) }], BUTTON - 0.95, 0.85, 'std')
+    anim(hand, [{ opacity: 0 }, { opacity: 1 }], BUTTON - 0.95, 0.2, 'lin')
+    anim(hand.querySelector('path'), [{ transform: 'scale(1)' }, { transform: 'scale(0.86)' }, { transform: 'scale(1)' }], BUTTON - 0.04, 0.2, 'std', 'none')
+    anim(go, [{ transform: 'scale(1)' }, { transform: 'scale(0.95)' }, { transform: 'scale(1)' }], BUTTON - 0.04, 0.28, 'std', 'none')
+    anim(go, [{ boxShadow: '0 0 0 0 color-mix(in oklab, var(--primary) 60%, transparent)' }, { boxShadow: '0 0 0 26px color-mix(in oklab, var(--primary) 0%, transparent)' }], BUTTON, 0.7, 'std', 'none')
+    onFrame((t) => { hand.style.visibility = t >= BUTTON - 0.95 ? 'visible' : 'hidden' })
+  }
+  return pieces
+})
+
+start()
+</script>
+</body>
+</html>

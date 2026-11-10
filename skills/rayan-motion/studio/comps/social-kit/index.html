@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Social kit</title>
+<link rel="stylesheet" href="/engine/engine.css">
+<style>
+.post { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: 7cqmin; overflow: hidden; }
+.top, .foot { display: flex; align-items: center; justify-content: space-between; position: relative; }
+.top img { height: 5cqmin !important; }
+.top .chip { height: 5cqmin; padding: 0 2.2cqmin; font-size: 2.3cqmin; gap: 1.2cqmin; }
+.top .live { width: 1.3cqmin; height: 1.3cqmin; box-shadow: 0 0 0 0.7cqmin color-mix(in oklab, var(--emerald) 20%, transparent); }
+.body { align-self: center; position: relative; max-width: 82cqw; }
+.body .eyebrow { font-size: 2.6cqmin; gap: 1.2cqmin; }
+.body .eyebrow svg { width: 2.8cqmin; height: 2.8cqmin; }
+.body .h { font-size: 12.5cqmin; margin-top: 2.6cqmin; }
+.body .lead { font-size: 3.9cqmin; margin-top: 3cqmin; max-width: 64cqw; }
+.foot { font-family: var(--font-mono); font-size: 2.5cqmin; letter-spacing: 0.04em; color: var(--muted-foreground); }
+@container (aspect-ratio > 2 / 1) {
+  .post { padding: 8cqmin 7cqmin; }
+  .body .h { font-size: 17cqmin; }
+  .body .lead { font-size: 5.6cqmin; max-width: 56cqw; }
+}
+@container (aspect-ratio < 1 / 1) {
+  .body { max-width: none; }
+  .body .h { font-size: 14.5cqmin; }
+  .body .lead { font-size: 4.6cqmin; max-width: none; }
+}
+</style>
+</head>
+<body>
+<div id="stage"><div id="scenes"></div></div>
+<script src="/engine/engine.js"></script>
+<script src="/engine/motion.js"></script>
+<script>
+frame(1200, 630)
+build([{ tone: 'primary', dur: 0, html: () => `
+  <div class="post">
+    <div class="layer aurora"></div><div class="layer dots mask-radial"></div>
+    <div class="top">${logo(40)}<span class="chip"><i class="live"></i>New</span></div>
+    <div class="body">
+      ${eyebrow('tasks')}
+      <div class="h">Plan less.<br><span class="grad">Ship more.</span></div>
+      <p class="lead">The task list that keeps up with your team.</p>
+    </div>
+    <div class="foot"><span>acme.com/tasks</span></div>
+  </div>` }])
+start()
+</script>
+</body>
+</html>

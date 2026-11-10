@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Product showcase</title>
+<link rel="stylesheet" href="/engine/engine.css">
+<style>
+#desk { position: absolute; left: 720px; top: 196px; transform-origin: 50% 50%; }
+#hand { position: absolute; left: 1420px; top: 170px; }
+.copy { position: absolute; left: 130px; top: 318px; width: 560px; }
+.copy .h { font-size: 92px; margin-top: 30px; }
+.copy .lead { margin-top: 30px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="scenes"></div>
+  <div id="persist"></div>
+</div>
+<script src="/engine/engine.js"></script>
+<script src="/engine/app.js"></script>
+<script src="/engine/helpers.js"></script>
+<script src="/engine/motion.js"></script>
+<script>
+const CUTS = [0.0, 2.9268, 5.8537, 10.2439]
+const len = (i) => CUTS[i + 1] - CUTS[i]
+const DESK = { w: 1120, h: 630 }
+const PHONE = { w: 300, h: 649 }
+const MOBILE = { w: 390, h: 844 }
+const bg = `<div class="layer glow"></div><div class="layer dots mask-radial"></div>`
+const S = []
+
+S.push({ tone: 'primary', dur: len(0), html: () => `${bg}
+  <div class="copy" data-a="outb@2.9">
+    <div data-a="blur@0.1">${eyebrow('tasks')}</div>
+    <div class="h">${type('Your tasks, in one place.', 0.2)}</div>
+    <p class="lead" data-a="blur@0.9">Add one in a line.</p>
+  </div>` })
+S.push({ tone: 'emerald', dur: len(1), html: () => bg })
+S.push({ tone: 'indigo', dur: len(2), html: () => `${bg}
+  <div class="copy" style="left: 1010px; top: 892px; width: 800px"><div class="h grad" style="font-size: 60px; margin: 0" data-a="blur@0.9/0.7">On every screen.</div></div>
+  <div class="abs" style="left: 130px; bottom: 90px" data-a="blur@1.3">${logo(44)}</div>` })
+
+build(S, { poster: 2.6 })
+const [, T1, T2] = S.map((s) => s.start)
+
+document.getElementById('persist').innerHTML = `
+  <div id="desk">${browserFrame(screenWindow('a', { x: 0, y: 0, w: DESK.w, h: DESK.h }, ['01-desktop']), { w: DESK.w, h: DESK.h, url: 'acme.com/tasks' })}</div>
+  <div id="notes"></div>
+  <div id="hand">${phoneFrame(screenWindow('b', { x: 0, y: 0, w: PHONE.w, h: PHONE.h }, ['02-phone'], MOBILE), { w: PHONE.w, h: PHONE.h })}</div>`
+
+screens(() => {
+  const a = win('a')
+  show(a, [[0, '01-desktop']])
+  camera(a, [[0, 640, 360, DESK.w / PAGE.w]])
+  const b = win('b')
+  show(b, [[0, '02-phone']])
+  camera(b, [[0, MOBILE.w / 2, MOBILE.h / 2, PHONE.w / MOBILE.w]])
+
+  const desk = document.getElementById('desk')
+  const tilt = 'perspective(1800px) rotateY(-12deg) rotateX(5deg)'
+  anim(desk, [{ opacity: 0, filter: 'blur(10px)', transform: `${tilt} translateY(70px) scale(0.94)` }, { opacity: 1, filter: 'blur(0px)', transform: tilt }], 0.3, 1.2, 'std')
+  anim(desk, [{ transform: tilt }, { transform: 'perspective(1800px) translateX(-320px)' }], T1 - 0.2, 1.0, 'std', 'forwards')
+  anim(desk, [{ transform: 'perspective(1800px) translateX(-320px)' }, { transform: 'perspective(1800px) translateX(-560px) scale(0.84)' }], T2 - 0.1, 1.0, 'std', 'forwards')
+
+  const scale = DESK.w / PAGE.w
+  const at = (r, fx, fy) => ({ x: 400 + (r.x + r.w * fx) * scale, y: 196 + 52 + (r.y + r.h * fy) * scale })
+  const button = at(box(a, '01-desktop', '#new'), 1, 0.5)
+  const row = at(box(a, '01-desktop', '#list li'), 0, 0.5)
+  const notes = document.getElementById('notes')
+  notes.dataset.tone = 'emerald'
+  notes.innerHTML = callout('Add a task in one line', { ...button, side: 'right', t: 1.0, len: 70 }) + callout('Newest on top', { ...row, side: 'left', t: 1.5, len: 90 })
+  parseAnims(notes, T1)
+  anim(notes, KF.outf, T2 - 0.35, 0.25, 'lin', 'forwards')
+  onFrame((t) => { notes.style.visibility = t >= T1 && t < T2 ? 'visible' : 'hidden' })
+
+  const hand = document.getElementById('hand')
+  anim(hand, [{ opacity: 0, filter: 'blur(10px)', transform: 'translateY(120px) rotate(4deg)' }, { opacity: 1, filter: 'blur(0px)', transform: 'translateY(0) rotate(0deg)' }], T2 + 0.2, 1.2, 'over')
+})
+
+start()
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Brand board</title>
+<link rel="stylesheet" href="/engine/engine.css">
+<style>
+.board { position: absolute; inset: 0; padding: 64px 76px; display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: auto 1fr; gap: 34px 34px; }
+.head { grid-column: 1 / -1; display: flex; align-items: end; justify-content: space-between; }
+.head .h { font-size: 88px; margin-top: 18px; }
+.col { display: grid; gap: 26px; align-content: start; }
+.panel { padding: 30px 32px 32px; display: grid; gap: 20px; }
+.swatches { display: grid; grid-template-columns: repeat(11, 1fr); gap: 8px; }
+.sw { height: 118px; padding: 10px; border-radius: 14px; display: flex; flex-direction: column; justify-content: end; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.5; }
+.tones { display: flex; gap: 12px; flex-wrap: wrap; }
+.type .d { font-family: var(--font-display); font-weight: 600; font-size: 84px; letter-spacing: -0.02em; line-height: 1.02; }
+.type .s { font-size: 28px; line-height: 1.4; color: color-mix(in oklab, var(--foreground) 78%, transparent); }
+.shapes { display: flex; align-items: center; gap: 18px; }
+.shapes .sample { width: 150px; height: 96px; display: grid; place-items: center; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.tile { height: 132px; display: grid; place-items: center; }
+.eases { display: flex; gap: 30px; }
+.eases figure { margin: 0; display: grid; gap: 12px; justify-items: start; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="scenes"></div></div>
+<script src="/engine/engine.js"></script>
+<script src="/engine/motion.js"></script>
+<script>
+const T = JSON.parse(inline('/brand/tokens.json'))
+const ink = (s) => (s.onWhite >= 4.5 ? '#fff' : '#09090b')
+const tones = ['primary', 'emerald', 'indigo', 'teal', 'amber', 'rose', 'cyan', 'violet']
+
+build([{ tone: 'primary', dur: 0, html: () => `
+  <div class="layer aurora" style="opacity: 0.7"></div>
+  <div class="board">
+    <div class="head">
+      <div>${eyebrow('brand-kit')}<div class="h grad">${BRAND}</div></div>
+      ${logo(54)}
+    </div>
+    <div class="col">
+      <div class="panel card sq-2xl">
+        <div class="micro">Brand scale · contrast on white</div>
+        <div class="swatches">${T.scale.map((s) => `<div class="sw" style="background: ${s.hex}; color: ${ink(s)}"><b>${s.step}</b><span>${s.hex}</span><span>${s.onWhite.toFixed(1)}:1</span></div>`).join('')}</div>
+      </div>
+      <div class="panel card sq-2xl">
+        <div class="micro">Tones</div>
+        <div class="tones">${tones.map((t) => `<span class="chip" data-tone="${t}"><i style="width: 14px; height: 14px; border-radius: 50%; background: var(--tone); box-shadow: 0 0 0 6px color-mix(in oklab, var(--tone) 20%, transparent)"></i>${t}</span>`).join('')}</div>
+      </div>
+      <div class="panel card sq-2xl">
+        <div class="micro">Motion</div>
+        <div class="eases">${[['std', 'expo out'], ['over', 'overshoot'], ['quint', 'quint out'], ['in', 'exit']].map(([e, name]) => `<figure>${curve(e, 104)}<figcaption class="micro" style="font-size: 13px">${name}</figcaption></figure>`).join('')}</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel card sq-2xl type">
+        <div class="micro">Type</div>
+        <div class="d">Plan less.<br><span class="grad">Ship more.</span></div>
+        <div class="s">The task list that keeps up with your team.</div>
+        <div>${eyebrow('tasks')}</div>
+      </div>
+      <div class="panel card sq-2xl">
+        <div class="micro">Shape</div>
+        <div class="shapes">
+          <div class="sample inset sq-xl micro" style="font-size: 13px">squircle</div>
+          <span class="btn" style="height: 60px; font-size: 22px">Get started</span>
+          <span class="chip"><i class="live"></i>Available</span>
+        </div>
+      </div>
+      <div class="tiles">
+        <div class="tile card sq-2xl">${logo(40)}</div>
+        <div class="tile sq-2xl" style="background: #fff; box-shadow: 0 0 0 1px var(--border)">${logo(40, 'logo.svg')}</div>
+      </div>
+    </div>
+  </div>` }])
+start()
+</script>
+</body>
+</html>

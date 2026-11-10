@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Logo sting</title>
+<link rel="stylesheet" href="/engine/engine.css">
+<style>
+#mark svg { display: block; height: 180px; width: auto; overflow: visible; }
+#halo { position: absolute; inset: -200px -160px; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in oklab, var(--primary) 46%, transparent), transparent); opacity: 0; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="scenes"></div></div>
+<script src="/engine/engine.js"></script>
+<script src="/engine/motion.js"></script>
+<script>
+const CUTS = [0.0, 4.8]
+const HIT = 1.6
+
+const S = [{ dur: CUTS[1], html: () => `
+  <div class="layer aurora bg"></div><div class="layer dots mask-radial bg"></div>
+  <div class="center">
+    <div style="display: grid; justify-items: center; gap: 46px">
+      <div style="position: relative"><i id="halo"></i><div id="mark" style="position: relative">${inline('/brand/logo-on-dark.svg')}</div></div>
+      <div class="lead" style="font-size: 42px">${type('Work that moves.', HIT + 0.35, { by: 'chars', gap: 0.04 })}</div>
+    </div>
+  </div>` }]
+
+build(S, { poster: 3.6 })
+drawOn(document.querySelector('#mark svg'), 0.3, { dur: 0.9, gap: 0.14 })
+anim(document.getElementById('mark'), [{ transform: 'scale(0.94)' }, { transform: 'scale(1)' }], HIT - 0.1, 0.75, 'over')
+anim(document.getElementById('halo'), KF.bloom, HIT - 0.15, 1.5, 'quint')
+start()
+</script>
+</body>
+</html>

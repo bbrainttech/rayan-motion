@@ -1,0 +1,16 @@
+node_modules/
+__pycache__/
+models/*
+!models/.gitkeep
+auditions/
+comps/*/build/
+comps/*/stills*/
+comps/*/out/
+comps/*/*.mp4
+comps/*/*.mov
+comps/*/*.webm
+comps/*/*.gif
+comps/*/*.wav
+comps/*/*.vtt
+comps/*/*.jpg
+comps/*/*.png
